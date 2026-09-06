@@ -446,111 +446,96 @@ const NimbjaAppointment = ({ company, data }) => {
               justifyContent: "space-between",
             }}
           >
+            {/* LEFT */}
             <div style={{ fontFamily: "Bahnschrift" }}>
+              <p>Yours faithfully,</p>
               <p>
-                {/* ⬆️ reduced margin to lift content slightly */}
-                Yours faithfully,
-              </p>
-
-              <p>
-                {/* ⬆️ negative margin lifts company name upward */}
                 <strong>For Nimbja Security Solution Pvt Ltd.</strong>
               </p>
             </div>
-            <div style={{ textAlign: "center", fontFamily: "Bahnschrift" }}>
-              <p>I ACCEPT</p>
-              <Typography sx={{ fontFamily: "Bahnschrift", mt: "2mm" }}>
+
+            {/* RIGHT */}
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start",
+                fontFamily: "Bahnschrift",
+                minWidth: "80mm",
+                fontSize: "11pt",
+              }}
+            >
+              <p style={{ margin: 0 }}>
+                I ACCEPT
+              </p>
+
+              <p style={{ marginTop: "2mm", marginBottom: "0" }}>
                 Signature : ________________
-              </Typography>
+              </p>
+
+              <p style={{ marginTop: "8mm", marginBottom: "0" }}>
+                Name: {data.employeeName}
+              </p>
+
+              <p style={{ marginTop: "4mm", marginBottom: "0" }}>
+                Date : ________________
+              </p>
             </div>
           </div>
-          <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-            <Box sx={{}}>
-              <Grid container spacing={2} alignItems="center">
-                <Grid item>
-                  <Box
-                    component="img"
-                    src={company?.signature}
-                    alt="Signature"
-                    sx={{ width: 180, mt: "-7mm", ml: "-2mm", height: 40 }}
-                  />
-                </Grid>
-                <Grid item>
-                  <Box
-                    component="img"
-                    src={company?.stamp}
-                    alt="Stamp"
-                    sx={{ width: 100 }}
-                  />
-                </Grid>
+
+          {/* SIGNATURE + STAMP */}
+          <Box>
+            <Grid container spacing={2} alignItems="center">
+              <Grid item>
+                <Box
+                  component="img"
+                  src={company?.signature}
+                  alt="Signature"
+                  sx={{
+                    width: 180,
+                    mt: "-20mm",
+                    ml: "-2mm",
+                    height: 40,
+                  }}
+                />
               </Grid>
 
-              <Box
+              <Grid item>
+                <Box
+                  component="img"
+                  src={company?.stamp}
+                  alt="Stamp"
+                  sx={{
+                    mt: "-20mm",
+                    width: 100,
+                  }}
+                />
+              </Grid>
+            </Grid>
+
+            {/* HR DETAILS ONLY */}
+            <Box sx={{ mt: "2mm" }}>
+              <Typography
                 sx={{
-                  display: "flex",
-                  justifyContent: "space-between", // ⬅️ LEFT & RIGHT alignment
-                  alignItems: "flex-start",
-                  mt: "2mm",
-                  width: "100%",
+                  fontFamily: "Bahnschrift",
+                  fontWeight: 400,
+                  fontSize: "4mm",
+                  mt: "-3mm",
                 }}
               >
-                {/* ================= LEFT — HR DETAILS ================= */}
-                <Box>
-                  <Typography
-                    sx={{
-                      fontFamily: "Bahnschrift",
-                      fontWeight: "400",
-                      fontSize: "4mm",
-                      mt: "-3mm",
-                    }}
-                  >
-                    {company?.hrName}
-                  </Typography>
+                {company?.hrName}
+              </Typography>
 
-                  <Typography
-                    sx={{
-                      fontFamily: "Bahnschrift",
-                      fontWeight: "400",
-                      fontSize: "4mm",
-                      mt: "-2mm",
-                    }}
-                  >
-                    HR Manager-HR Services
-                  </Typography>
-                </Box>
-
-                {/* ================= RIGHT — NAME & DATE ================= */}
-                {/* ================= RIGHT — NAME & DATE (SAME COLUMN) ================= */}
-                <Box
-                  sx={{
-                    display: "flex",
-                    flexDirection: "column", // 🔑 vertical stacking
-                    alignItems: "flex-end", // 🔑 same right edge
-                  }}
-                >
-                  <Typography
-                    sx={{
-                      fontFamily: "Bahnschrift",
-                      textAlign: "right",
-                      marginRight: "-3mm",
-                      mt: "-6mm",
-                    }}
-                  >
-                    Name: {data.employeeName}
-                  </Typography>
-
-                  <Typography
-                    sx={{
-                      fontFamily: "Bahnschrift",
-                      mt: "1mm", // 🔑 small Word-like gap
-                      textAlign: "left",
-                      ml: "73mm",
-                    }}
-                  >
-                    Date : ________________
-                  </Typography>
-                </Box>
-              </Box>
+              <Typography
+                sx={{
+                  fontFamily: "Bahnschrift",
+                  fontWeight: 400,
+                  fontSize: "4mm",
+                  mt: "-2mm",
+                }}
+              >
+                HR Manager-HR Services
+              </Typography>
             </Box>
           </Box>
         </div>
