@@ -182,11 +182,11 @@ const PentaIncrement = ({ company, data }) => {
 
 
                         . Your salary will increase to{" "}
-                        <strong>{formatCurrency(totalAnnual)}</strong> per annum. Effective from <strong> {new Date(data.effectiveDate).toLocaleDateString("en-US", {
+                        <strong>{formatCurrency(data.currentCTC)}</strong> per annum. Effective from <strong> {new Date(data.increment_letter.effectiveDate).toLocaleDateString("en-US", {
                             month: "long",
                             day: "2-digit",
                             year: "numeric",
-                        })}
+                        })}.
                         </strong>
                     </Typography>
                     <Typography sx={{ mb: 4, textAlign: "justify" }}>
