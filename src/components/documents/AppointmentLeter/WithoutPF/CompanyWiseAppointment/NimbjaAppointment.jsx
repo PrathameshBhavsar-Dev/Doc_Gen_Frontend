@@ -533,9 +533,10 @@ const NimbjaAppointment = ({ company, data }) => {
                     component="img"
                     src={company?.stamp}
                     alt="Stamp"
-                    sx={{ width: 100,
+                    sx={{
+                      width: 100,
                       mt: "-17mm",
-                     }}
+                    }}
                   />
                 </Grid>
               </Grid>

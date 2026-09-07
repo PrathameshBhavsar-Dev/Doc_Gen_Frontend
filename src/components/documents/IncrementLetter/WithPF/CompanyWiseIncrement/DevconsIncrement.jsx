@@ -110,7 +110,7 @@ const DevconsIncrement = ({ company = {}, data = {} }) => {
             <strong>{company.name}</strong>, we are pleased to offer you a salary
             increment effective{" "}
             <strong>
-              {new Date(data.effectiveDate).toLocaleDateString("en-US", {
+              {new Date(data.increment_letter.effectiveDate).toLocaleDateString("en-US", {
                 month: "long",
                 day: "2-digit",
                 year: "numeric",

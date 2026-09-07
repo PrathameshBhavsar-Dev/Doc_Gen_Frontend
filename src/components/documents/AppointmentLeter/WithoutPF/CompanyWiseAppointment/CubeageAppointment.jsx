@@ -32,49 +32,122 @@ const formatDate = (date) => {
 };
 /* ---------------- Page Layout ---------------- */
 
-const PageLayout = ({ children, company }) => (
-  <Box
-    sx={{
-      width: "210mm",
-      minHeight: "297mm",
-      backgroundColor: "white",
-      fontFamily: "'Calibri','Arial',sans-serif",
-      marginBottom: "20px",
-      "@media print": { marginBottom: 0, breakAfter: "page" },
-    }}
-  >
+const PageLayout = ({ children, company, isLastPage = false }) => {
+  return (
     <Box
       sx={{
+        width: "210mm",
+        height: "297mm",
+        boxSizing: "border-box",
+
+        backgroundColor: "#fff",
+        fontFamily: "'Calibri', Arial, sans-serif",
+
         display: "flex",
-        alignItems: "flex-start",
-        gap: 2,
-        px: 4,
-        py: 2,
-        borderBottom: "2px solid #000",
+        flexDirection: "column",
+
+        overflow: "hidden",
+        margin: "0 auto 18px",
+
+        "@media print": {
+          width: "210mm",
+          height: "297mm",
+          margin: 0,
+
+          ...(isLastPage
+            ? {
+                breakAfter: "auto",
+                pageBreakAfter: "auto",
+              }
+            : {
+                breakAfter: "page",
+                pageBreakAfter: "always",
+              }),
+        },
       }}
     >
-      <Box>
+      {/* HEADER */}
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 2,
+
+          px: 4,
+          py: 2,
+
+          borderBottom: "2px solid #000",
+
+          flexShrink: 0,
+          boxSizing: "border-box",
+        }}
+      >
         {company.logo && (
-          <img src={company.logo} alt="logo" style={{ height: 70 }} />
+          <Box
+            sx={{
+              width: 70,
+              height: 70,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+            }}
+          >
+            <img
+              src={company.logo}
+              alt="logo"
+              style={{
+                maxHeight: 70,
+                maxWidth: 70,
+                objectFit: "contain",
+                display: "block",
+              }}
+            />
+          </Box>
         )}
+
+        <Box sx={{ flex: 1 }}>
+          <Typography fontWeight="bold" fontSize="18px">
+            {company.name}
+          </Typography>
+
+          <Typography fontSize="11px">
+            {company.address}
+          </Typography>
+
+          <Typography fontSize="11px">
+            Contact No: {company.phone}
+          </Typography>
+
+          <Typography fontSize="11px">
+            Email: {company.email}
+          </Typography>
+        </Box>
       </Box>
-      <Box>
-        <Typography fontWeight="bold" fontSize="18px">
-          {company.name}
-        </Typography>
-        <Typography fontSize="11px">{company.address}</Typography>
-        <Typography fontSize="11px">
-          Contact No: {company.phone}
-        </Typography>
-        <Typography fontSize="11px">
-          Email: {company.email}
-        </Typography>
+
+      {/* CONTENT */}
+      <Box
+        sx={{
+          flex: 1,
+          minHeight: 0,
+
+          px: 6,
+          py: 2,
+
+          boxSizing: "border-box",
+
+          overflow: "hidden",
+
+          "& .MuiTypography-root": {
+            lineHeight: 1.4,
+          },
+        }}
+      >
+        {children}
       </Box>
     </Box>
-
-    <Box sx={{ px: 7, py: 3 }}>{children}</Box>
-  </Box>
-);
+  );
+};
 
 const TC = (extra = {}) => ({
   border: "1px solid #000",
