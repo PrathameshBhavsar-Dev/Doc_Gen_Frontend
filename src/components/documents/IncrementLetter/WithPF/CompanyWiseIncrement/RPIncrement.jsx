@@ -168,9 +168,9 @@ const RPIncrement = ({ company = {}, data = {} }) => {
 
           <Typography mb={3}>
             In recognition of your performance your compensation has been
-            revised to <strong>{formatCurrency(totalAnnual)}</strong> per annum
+            revised to <strong>{formatCurrency(data.currentCTC)}</strong> per annum
             effective{" "}
-            <strong>{formatDate(data.effectiveDate)}</strong>.
+            <strong>{formatDate(data.increment_letter.effectiveDate)}</strong>.
           </Typography>
 
           <Typography mb={4}>

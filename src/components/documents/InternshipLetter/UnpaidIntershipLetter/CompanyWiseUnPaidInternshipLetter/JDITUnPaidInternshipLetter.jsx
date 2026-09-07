@@ -42,7 +42,7 @@ const JDITUnPaidInternshipLetter = ({ company, data }) => {
   return (
     <A4Page headerSrc={company.header} footerSrc={company.footer}>
       <Typography sx={{ ...TEXT, mb: 3, textAlign: "right" }}>
-        {formatDate(data.issueDate)}
+        {formatDate(data.internship_certificate.issueDate)}
       </Typography>
       <Typography
         sx={{
@@ -62,9 +62,9 @@ const JDITUnPaidInternshipLetter = ({ company, data }) => {
         This is to certify that <strong>{data.employeeName}</strong> has done{" "}
         {pronouns.possessive} internship at{" "}
         <strong>JDIT SOFTWARE SOLUTIONS PVT. LTD.</strong> from{" "}
-        <strong>{formatDate(data.startDate)}</strong> to{" "}
+        <strong>{formatDate(data.internship_certificate.startDate)}</strong> to{" "}
         <strong>
-          {formatDate(data.completionDate ?? data.endDate)}
+          {formatDate(data.internship_certificate.completionDate ?? data.internship_certificate.endDate)}
         </strong>
       </Typography>
 

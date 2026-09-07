@@ -104,7 +104,7 @@ const QuickUnPaidInternshipLetter = ({ company, data }) => {
       </Typography>
 
       <Typography sx={{ fontSize: 13.5, lineHeight: 2, mb: 2 }}>
-        From <strong>{formatDate(startDate)}</strong> –{" "}
+        From <strong>{formatDate(data.internship_certificate.startDate)}</strong> –{" "}
         <strong>{formatDate(endDate)}</strong>.{" "}
         {pronoun.subject} was designated as{" "}
         <strong>{designation}</strong>.
