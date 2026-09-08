@@ -34,7 +34,20 @@ const DevconsProjectCompletion = ({ company, data }) => {
       <A4Page headerSrc={company.header} footerSrc={company.footer}>
         {/* ================= CONTENT ================= */}
         <Box>
+          
           {/* TITLE */}
+          <Typography
+            sx={{
+              textAlign: "right",
+              // fontWeight: 700,
+              // textTransform: "uppercase",
+              
+              mb: 6,
+              // letterSpacing: "0.5px",
+            }}
+          >
+            Date: {data.issueDate}
+          </Typography>
           <Typography
             sx={{
               textAlign: "center",

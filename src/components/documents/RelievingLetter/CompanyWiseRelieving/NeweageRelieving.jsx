@@ -89,7 +89,7 @@ const NeweageRelieving = ({ company, data }) => {
 
       <Typography sx={{ ...TEXT, mb: 2 }}>
         Your tenure with <b>NEWAGE CLOUD SOFTWARE SERVICES PVT. LTD.</b> will conclude on{" "}
-        <b>{formatDate(lastWorkingDay)}</b>, which will be your last working day with the company.
+        <b>{data.lastWorkingDay}</b>, which will be your last working day with the company.
       </Typography>
 
       <Typography sx={{ ...TEXT, mb: 6 }}>
