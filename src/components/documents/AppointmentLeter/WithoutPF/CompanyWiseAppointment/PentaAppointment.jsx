@@ -176,11 +176,6 @@ const PentaAppointment = ({ company, data }) => {
           {/* COMPANY SIGNATURE */}
           <Box>
             <Typography>For<strong> {company.name} </strong></Typography>
-
-
-
-
-
             <Box sx={{ mt: 3 }}>
               <Box sx={{ display: "flex", alignItems: "flex-end", gap: 3 }}>
                 {company.signature && (
@@ -219,11 +214,84 @@ const PentaAppointment = ({ company, data }) => {
           </Box>
 
           {/* ACCEPTANCE */}
-          <Box>
-            <Typography fontWeight={600}>Accepted By</Typography>
-            <Typography mt={1}>Signature: ____________</Typography>
-            <Typography mt={10}>Name: {data.employeeName}</Typography>
-            <Typography mt={1}>Date: ____________</Typography>
+          {/* ACCEPTANCE */}
+          <Box
+            sx={{
+              minWidth: "280px",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "flex-start",
+            }}
+          >
+            <Typography
+              fontWeight={600}
+              sx={{
+                mb: 2,
+              }}
+            >
+              Accepted By
+            </Typography>
+
+            {/* Signature */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                minWidth: "100%",
+              }}
+            >
+              <Typography sx={{ minWidth: "90px" }}>
+                Signature:
+              </Typography>
+
+              <Box
+                sx={{
+                  borderBottom: "1px solid #333",
+                  width: "180px",
+                  height: "20px",
+                }}
+              />
+            </Box>
+
+            {/* Name */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                mt: 8,
+                minWidth: "100%",
+              }}
+            >
+              <Typography sx={{ minWidth: "90px" }}>
+                Name:
+              </Typography>
+
+              <Typography>
+                {data.employeeName}
+              </Typography>
+            </Box>
+
+            {/* Date */}
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                mt: 2,
+                minWidth: "100%",
+              }}
+            >
+              <Typography sx={{ minWidth: "90px" }}>
+                Date:
+              </Typography>
+
+              <Box
+                sx={{
+                  borderBottom: "1px solid #333",
+                  width: "180px",
+                  height: "20px",
+                }}
+              />
+            </Box>
           </Box>
         </Box>
       </A4Page>

@@ -188,8 +188,8 @@ const NeweageConfirmation = ({ company = {}, data = {} }) => {
           <Typography mb={2} textAlign="justify">
             If there is any change in the date of joining, changes can be taken
             under consideration. Your total Gross salary will be Rs.{" "}
-            <strong>{formatCurrency(totalAnnual)}</strong> (
-            {numberToWords(totalAnnual)}) per year.
+            <strong>{formatCurrency(data.joiningCTC)}</strong> (
+            {numberToWords(data.joiningCTC)}) per year.
           </Typography>
           <Typography mb={2}>
             Subject to various deductions as per companies and government

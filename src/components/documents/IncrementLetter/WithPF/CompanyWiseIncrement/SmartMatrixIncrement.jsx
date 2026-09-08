@@ -219,9 +219,9 @@ const SmartMatrixIncrement = ({ company, data }) => {
             continued success at {company.name}.
           </Typography>
 
-          <Typography sx={{ fontSize: "14pt", marginTop: "80px" }}>
+          <div style={{ fontSize: "18px", marginTop: "80px" }}>
             <strong>SmartMatrix Digital Services Pvt Ltd.</strong>
-          </Typography>
+          </div>
 
           <Box sx={{ mt: "5mm" }}>
             <Box sx={{ display: "flex", alignItems: "flex-end", gap: "10mm" }}>

@@ -240,10 +240,10 @@ const SmartMatrixIncrement = ({ company, data }) => {
           </Typography>
 
           {/* COMPANY NAME (BOLD IN WORD) */}
-          <Typography sx={{ fontSize: "14pt", marginTop: "80px" }}>
+          <div style={{ fontSize: "18px", marginTop: "80px" }}>
             <strong>SmartMatrix Digital Services Pvt Ltd.</strong>
-          </Typography>
-
+          </div>
+          
           {/* STAMP + SIGNATURE */}
           <Box sx={{ mt: "6mm" }}>
             {/* STAMP + SIGNATURE SIDE BY SIDE */}

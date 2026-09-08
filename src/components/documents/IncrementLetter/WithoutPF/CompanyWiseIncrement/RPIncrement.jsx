@@ -156,7 +156,7 @@ const totalMonthly = round0(
             In recognition of your performance your compensation has been
             revised to{" "}<strong>{formatCurrency(totalAnnual)}</strong> per annum effective{" "}
             <strong>
-              {new Date(issueDate).toLocaleDateString("en-US", {
+              {new Date(data.increment_letter.effectiveDate).toLocaleDateString("en-US", {
                 month: "long",
                 day: "2-digit",
                 year: "numeric",
