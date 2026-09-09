@@ -114,7 +114,7 @@ const DevconsSalarySlip = ({ company = {}, data = {} }) => {
             fontFamily: "Bahnschrift",
             color: "#000",
             verticalAlign: "middle",         // 🔥 FIX alignment
-            lineHeight: 1.7,                 // 🔥 better spacing
+            lineHeight: 1.6,                 // 🔥 better spacing
           },
         }}
       >
