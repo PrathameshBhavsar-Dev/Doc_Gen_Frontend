@@ -138,7 +138,8 @@ const NimbjaFullAndfinal = ({ company = {}, data = {} }) => {
   // ACTUAL SALARY COMPONENTS
   // -----------------------------------------
 
-  const hra = Math.round(gross * 0.18);
+  // Actual salary components
+  const hra = Math.round(gross * 0.18); // 
   const da = Math.round(gross * 0.12);
   const special = Math.round(gross * 0.16);
   const food = Math.round(gross * 0.06);
