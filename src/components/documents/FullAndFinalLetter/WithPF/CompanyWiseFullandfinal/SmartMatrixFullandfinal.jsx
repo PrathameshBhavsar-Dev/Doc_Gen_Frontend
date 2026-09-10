@@ -115,7 +115,7 @@ const FullandFinalPF = ({ company = {}, data = {} }) => {
 
   /* ================= SALARY BREAKUP ================= */
 
-  const basic = grossSalary * 0.48;
+  const basic = grossSalary * 0.40;
   const hra = grossSalary * 0.18;
   const da = grossSalary * 0.12;
   const special = grossSalary * 0.16;

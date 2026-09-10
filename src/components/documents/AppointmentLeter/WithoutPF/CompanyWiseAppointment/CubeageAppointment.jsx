@@ -30,14 +30,29 @@ const formatDate = (date) => {
       year: "numeric",
     });
 };
+
 /* ---------------- Page Layout ---------------- */
+/*
+  KEY FIX:
+  - height -> minHeight. A hard `height` + `overflow:hidden` on a page box
+    doesn't reliably clip content during PDF rasterization (Puppeteer/Chrome
+    print still lays out the overflowing content in flow, then it spills
+    onto the next physical page). minHeight lets the page grow if content
+    is slightly longer than expected, instead of silently corrupting the
+    next page.
+  - overflow: hidden removed for the same reason - we no longer rely on
+    clipping to hide overflow, we let the page breaks do their job.
+  - Added `break-inside: avoid` support at the section level (see
+    <Section> below) so a clause doesn't get sliced in half across a
+    page boundary either.
+*/
 
 const PageLayout = ({ children, company, isLastPage = false }) => {
   return (
     <Box
       sx={{
         width: "210mm",
-        height: "297mm",
+        minHeight: "297mm", // was: height: "297mm"
         boxSizing: "border-box",
 
         backgroundColor: "#fff",
@@ -46,12 +61,11 @@ const PageLayout = ({ children, company, isLastPage = false }) => {
         display: "flex",
         flexDirection: "column",
 
-        overflow: "hidden",
         margin: "0 auto 18px",
 
         "@media print": {
           width: "210mm",
-          height: "297mm",
+          minHeight: "297mm",
           margin: 0,
 
           ...(isLastPage
@@ -80,6 +94,10 @@ const PageLayout = ({ children, company, isLastPage = false }) => {
 
           flexShrink: 0,
           boxSizing: "border-box",
+
+          // Never let the header itself split across a page break
+          breakInside: "avoid",
+          pageBreakInside: "avoid",
         }}
       >
         {company.logo && (
@@ -136,8 +154,6 @@ const PageLayout = ({ children, company, isLastPage = false }) => {
 
           boxSizing: "border-box",
 
-          overflow: "hidden",
-
           "& .MuiTypography-root": {
             lineHeight: 1.4,
           },
@@ -148,6 +164,25 @@ const PageLayout = ({ children, company, isLastPage = false }) => {
     </Box>
   );
 };
+
+/*
+  New: wrap each numbered clause in a Section so it can't be split
+  mid-paragraph across a page break. If a clause is too long to fit
+  in the remaining space on a page, the renderer will now push the
+  WHOLE clause onto the next page rather than slicing it - eliminating
+  the "orphan line at the top of the next page" bug you're seeing.
+*/
+const Section = ({ children, mb = 2 }) => (
+  <Box
+    sx={{
+      mb,
+      breakInside: "avoid",
+      pageBreakInside: "avoid",
+    }}
+  >
+    {children}
+  </Box>
+);
 
 const TC = (extra = {}) => ({
   border: "1px solid #000",
@@ -171,15 +206,6 @@ const CubeageOffer = ({ company = {}, data = {} }) => {
   // Special allowance as the balancing figure
   const special = monthlyCTC - (basic + hra + da + lta + allow);
 
-  const rows = [
-    ["Basic", basic],
-    ["HRA", hra],
-    ["DA", da],
-    ["LTA", lta],
-    ["ALLOWANCE (Shift+Skill)", allow],
-    ["SPECIAL ALLOWANCE", special],
-  ];
-
   const employeeName = data.employeeName ? `${data.mrms || ""} ${data.employeeName}`.trim() : data.employeeName || "";
   const position = data.joiningDesignation ?? data.position ?? "";
   const location = data.workLocation || company.city || "";
@@ -201,13 +227,11 @@ const CubeageOffer = ({ company = {}, data = {} }) => {
         </Typography>
 
         <Typography mb={2}>
-          <strong>
-            Employee Name: {employeeName}</strong>
+          <strong>Employee Name: {employeeName}</strong>
         </Typography>
 
         <Typography mb={2}>
-          <strong>
-            Dear {employeeName}</strong>,
+          <strong>Dear {employeeName}</strong>,
         </Typography>
 
         <Typography textAlign="justify" mb={2}>
@@ -215,190 +239,216 @@ const CubeageOffer = ({ company = {}, data = {} }) => {
           we are pleased to offer you the position of <strong>{position}</strong> for <strong>{location}</strong> Location on the following terms and conditions:
         </Typography>
 
-        <Typography fontWeight="bold">1. Date of Appointment</Typography>
-        <Typography mb={2}>
-          Your appointment is effective from <strong>{formatDate(joiningDate)}</strong>.
-        </Typography>
-
-        <Typography fontWeight="bold">2. Joining</Typography>
-        <Typography mb={2}>
-          Your Joining will be at “<strong>{company.name}</strong>”, “<strong>{location}</strong>”.
-        </Typography>
-
-        <Typography fontWeight="bold">3. Place of Employment</Typography>
-        <Box sx={{ pl: 3 }}>
-          <Typography textAlign="justify" mb={1}>
-            3.1 You acknowledge and agree that you may be assigned, transferred or deputed
-            to offices, departments or Units of Company and/or its affiliates and/or their
-            contractors and clients, whether in India or abroad. In the event of any such
-            assignment, transfer or deputation, you may be required to consent to and/or
-            agree to certain other agreements, or policies applicable to such an assignment,
-            deputation or transfer.
+        <Section>
+          <Typography fontWeight="bold">1. Date of Appointment</Typography>
+          <Typography>
+            Your appointment is effective from <strong>{formatDate(joiningDate)}</strong>.
           </Typography>
+        </Section>
+
+        <Section>
+          <Typography fontWeight="bold">2. Joining</Typography>
+          <Typography>
+            Your Joining will be at “<strong>{company.name}</strong>”, “<strong>{location}</strong>”.
+          </Typography>
+        </Section>
+
+        <Section>
+          <Typography fontWeight="bold">3. Place of Employment</Typography>
+          <Box sx={{ pl: 3 }}>
+            <Typography textAlign="justify" mb={1}>
+              3.1 You acknowledge and agree that you may be assigned, transferred or deputed
+              to offices, departments or Units of Company and/or its affiliates and/or their
+              contractors and clients, whether in India or abroad. In the event of any such
+              assignment, transfer or deputation, you may be required to consent to and/or
+              agree to certain other agreements, or policies applicable to such an assignment,
+              deputation or transfer.
+            </Typography>
+            <Typography textAlign="justify">
+              3.2 In the event of any assignment, transfer or deputation of your services,
+              your salary and other benefits may be adjusted in accordance with the
+              company’s policies with respect to such an assignment, transfer or deputation.
+            </Typography>
+          </Box>
+        </Section>
+
+        <Section>
+          <Typography fontWeight="bold">4. Cost to Company</Typography>
           <Typography textAlign="justify" mb={2}>
-            3.2 In the event of any assignment, transfer or deputation of your services,
-            your salary and other benefits may be adjusted in accordance with the
-            company’s policies with respect to such an assignment, transfer or deputation.
-          </Typography>
-        </Box>
-
-        <Typography fontWeight="bold">4. Cost to Company</Typography>
-        <Typography textAlign="justify" mb={2}>
-          You will be paid an annual emolument of <strong>Rs. {fmt(annualCTC)}/-</strong>.
-          For detailed Break-up kindly refer the Annexure I.
-        </Typography>
-
-        <Typography textAlign="justify" mb={2}>
-          Your compensation may be reviewed on periodic basis and your salary may be adjusted,
-          depending upon various factors, including your performance during the preceding period.
-        </Typography>
-
-        <Typography textAlign="justify">
-          Notwithstanding the above, you acknowledge that it is Company’s policy to review
-          the compensation payable to its employees for successive years and such compensation
-          may be higher or lower than the compensation received for the previous year depending
-          upon various factors, including the overall performance of the Company.
-        </Typography>
-
-      </PageLayout>
-      {/* ================= PAGE 2 ================= */}
-      <PageLayout company={company}>
-
-        <Typography fontWeight="bold">5. Working hours</Typography>
-        <Typography mb={2}>
-          Normal hours are as determined by the company but your responsibility is to
-          ensure that the assigned deliverables are completed within the allocated duration.
-        </Typography>
-
-        <Typography fontWeight="bold">6. Probation</Typography>
-        <Box sx={{ pl: 3 }}>
-          <Typography mb={1} sx={{ display: 'list-item', listStyleType: 'lower-alpha', ml: 2 }}>
-            You will be on probation for a period of Three months.
-          </Typography>
-          <Typography mb={2} sx={{ display: 'list-item', listStyleType: 'lower-alpha', ml: 2 }}>
-            The period of probation can be extended at the discretion of the Management
-            and you will continue to be on probation till you are communicated otherwise.
-          </Typography>
-        </Box>
-
-        <Typography fontWeight="bold">7. Non-competition</Typography>
-        <Typography textAlign="justify" mb={2}>
-          You agree with the Company that you will not, during the continuance of your employment
-          with the Company, carry on or be engaged, directly or indirectly, either on your own
-          behalf or on behalf of any person, or as manager, agent, consultant or employee of any
-          person, firm or company, in any activity or business, in India or overseas, which shall
-          directly or indirectly be in competition with the business of the Company or its
-          subsidiaries or associated companies.
-        </Typography>
-
-        <Typography fontWeight="bold">8. Court Cases / Police Cases</Typography>
-        <Typography textAlign="justify" mb={2}>
-          You will submit a firm undertaking / confirmation in writing that there are no
-          police cases / court cases pending in any court in India. If such undertaking
-          submitted by you is found to be false, then this Offer-cum-Appointment letter
-          shall stand terminated with immediate effect and you shall not be entitled to
-          any compensation for any services you may have rendered.
-        </Typography>
-
-        <Typography fontWeight="bold">9. Confidentiality</Typography>
-        <Box sx={{ pl: 3 }}>
-          <Typography textAlign="justify" mb={1}>
-            9.1 You agree that in the course of your employment you will have access to and
-            be entrusted with information in respect of the business of the Company including
-            intellectual property, processes and product specifications, etc. and relating to
-            its dealings, transactions and affairs and likewise in relation to its subsidiaries,
-            associated companies, customers or clients all of which information is or may be
-            of a confidential nature.
+            You will be paid an annual emolument of <strong>Rs. {fmt(annualCTC)}/-</strong>.
+            For detailed Break-up kindly refer the Annexure I.
           </Typography>
 
-          <Typography textAlign="justify" mb={1}>
-            9.2 You shall not, except in the proper course of performance of your duties during
-            or at any time after the period of your employment or as may be required by law,
-            divulge or disclose to any person whatsoever, any Confidential Information of the
-            Company or any of its subsidiaries or associated companies or any of its or their
-            suppliers, agents, distributors or customers.
-          </Typography>
-
-          <Typography textAlign="justify" mb={1}>
-            9.3 All notes, memoranda, documents and Confidential Information concerning the
-            business of the Company and its subsidiaries or associated companies or any of its
-            or their suppliers, agents, distributors or customers which shall be acquired,
-            received or made by you during the course of your employment shall be property of
-            the Company and shall be surrendered by you to the Company upon the termination or
-            at the request of the Company at any time during the course of your employment.
+          <Typography textAlign="justify" mb={2}>
+            Your compensation may be reviewed on periodic basis and your salary may be adjusted,
+            depending upon various factors, including your performance during the preceding period.
           </Typography>
 
           <Typography textAlign="justify">
-            9.4 Confidential Information means information relating to the business, products,
-            affairs and finances of the Company or any of its associated company or subsidiary
-            for the time being confidential to it or to them and trade secrets (including without
-            limitation, technical data and know-how) relating to the business of the Company or
-            of any of its Associated Company/ies or of any of its or their suppliers, clients or customers.
+            Notwithstanding the above, you acknowledge that it is Company’s policy to review
+            the compensation payable to its employees for successive years and such compensation
+            may be higher or lower than the compensation received for the previous year depending
+            upon various factors, including the overall performance of the Company.
           </Typography>
-        </Box>
+        </Section>
+
+      </PageLayout>
+
+      {/* ================= PAGE 2 ================= */}
+      <PageLayout company={company}>
+
+        <Section>
+          <Typography fontWeight="bold">5. Working hours</Typography>
+          <Typography>
+            Normal hours are as determined by the company but your responsibility is to
+            ensure that the assigned deliverables are completed within the allocated duration.
+          </Typography>
+        </Section>
+
+        <Section>
+          <Typography fontWeight="bold">6. Probation</Typography>
+          <Box sx={{ pl: 3 }}>
+            <Typography mb={1} sx={{ display: 'list-item', listStyleType: 'lower-alpha', ml: 2 }}>
+              You will be on probation for a period of Three months.
+            </Typography>
+            <Typography sx={{ display: 'list-item', listStyleType: 'lower-alpha', ml: 2 }}>
+              The period of probation can be extended at the discretion of the Management
+              and you will continue to be on probation till you are communicated otherwise.
+            </Typography>
+          </Box>
+        </Section>
+
+        <Section>
+          <Typography fontWeight="bold">7. Non-competition</Typography>
+          <Typography textAlign="justify">
+            You agree with the Company that you will not, during the continuance of your employment
+            with the Company, carry on or be engaged, directly or indirectly, either on your own
+            behalf or on behalf of any person, or as manager, agent, consultant or employee of any
+            person, firm or company, in any activity or business, in India or overseas, which shall
+            directly or indirectly be in competition with the business of the Company or its
+            subsidiaries or associated companies.
+          </Typography>
+        </Section>
+
+        <Section>
+          <Typography fontWeight="bold">8. Court Cases / Police Cases</Typography>
+          <Typography textAlign="justify">
+            You will submit a firm undertaking / confirmation in writing that there are no
+            police cases / court cases pending in any court in India. If such undertaking
+            submitted by you is found to be false, then this Offer-cum-Appointment letter
+            shall stand terminated with immediate effect and you shall not be entitled to
+            any compensation for any services you may have rendered.
+          </Typography>
+        </Section>
+
+        <Section>
+          <Typography fontWeight="bold">9. Confidentiality</Typography>
+          <Box sx={{ pl: 3 }}>
+            <Typography textAlign="justify" mb={1}>
+              9.1 You agree that in the course of your employment you will have access to and
+              be entrusted with information in respect of the business of the Company including
+              intellectual property, processes and product specifications, etc. and relating to
+              its dealings, transactions and affairs and likewise in relation to its subsidiaries,
+              associated companies, customers or clients all of which information is or may be
+              of a confidential nature.
+            </Typography>
+
+            <Typography textAlign="justify" mb={1}>
+              9.2 You shall not, except in the proper course of performance of your duties during
+              or at any time after the period of your employment or as may be required by law,
+              divulge or disclose to any person whatsoever, any Confidential Information of the
+              Company or any of its subsidiaries or associated companies or any of its or their
+              suppliers, agents, distributors or customers.
+            </Typography>
+
+            <Typography textAlign="justify" mb={1}>
+              9.3 All notes, memoranda, documents and Confidential Information concerning the
+              business of the Company and its subsidiaries or associated companies or any of its
+              or their suppliers, agents, distributors or customers which shall be acquired,
+              received or made by you during the course of your employment shall be property of
+              the Company and shall be surrendered by you to the Company upon the termination or
+              at the request of the Company at any time during the course of your employment.
+            </Typography>
+
+            <Typography textAlign="justify">
+              9.4 Confidential Information means information relating to the business, products,
+              affairs and finances of the Company or any of its associated company or subsidiary
+              for the time being confidential to it or to them and trade secrets (including without
+              limitation, technical data and know-how) relating to the business of the Company or
+              of any of its Associated Company/ies or of any of its or their suppliers, clients or customers.
+            </Typography>
+          </Box>
+        </Section>
 
       </PageLayout>
 
       {/* ================= PAGE 3 ================= */}
       <PageLayout company={company}>
 
-        {/* Clauses 10–12 */}
+        <Section>
+          <Typography fontWeight="bold">10. Travel</Typography>
+          <Typography>
+            Any work related travel will be paid by the company as per the expenditure policies
+            of the company. A copy of this policy will be provided to you by your HR coordinator.
+          </Typography>
+        </Section>
 
-        <Typography fontWeight="bold">10. Travel</Typography>
-        <Typography mb={2}>
-          Any work related travel will be paid by the company as per the expenditure policies
-          of the company. A copy of this policy will be provided to you by your HR coordinator.
-        </Typography>
+        <Section>
+          <Typography fontWeight="bold">11. Joining Formalities</Typography>
+          <Typography>
+            This offer is subject to your completing joining formalities as specified in Annexure II
+            and your confidential report being found satisfactory from the references provided to us.
+          </Typography>
+        </Section>
 
-        <Typography fontWeight="bold">11. Joining Formalities</Typography>
-        <Typography mb={2}>
-          This offer is subject to your completing joining formalities as specified in Annexure II
-          and your confidential report being found satisfactory from the references provided to us.
-        </Typography>
+        <Section>
+          <Typography fontWeight="bold">12. Termination</Typography>
+          <Typography textAlign="justify" mb={2}>
+            Your services can be terminated by either party after giving one month’s notice.
+            If your services are terminated at your initiative, the company reserves the right
+            to insist on full compliance to the notice period and may initiate appropriate legal remedies.
+          </Typography>
 
-        <Typography fontWeight="bold">12. Termination</Typography>
-        <Typography textAlign="justify" mb={2}>
-          Your services can be terminated by either party after giving one month’s notice.
-          If your services are terminated at your initiative, the company reserves the right
-          to insist on full compliance to the notice period and may initiate appropriate legal remedies.
-        </Typography>
+          <Typography textAlign="justify" mb={2}>
+            Your employment is subject to positive Background Verification done by the Company.
+            If any document/s or information submitted by you is/are found to be false,
+            your offer shall stand terminated with immediate effect without any prior notice
+            and you will not be entitled to any dues / claims.
+          </Typography>
 
-        <Typography textAlign="justify" mb={2}>
-          Your employment is subject to positive Background Verification done by the Company.
-          If any document/s or information submitted by you is/are found to be false,
-          your offer shall stand terminated with immediate effect without any prior notice
-          and you will not be entitled to any dues / claims.
-        </Typography>
+          <Typography textAlign="justify">
+            Please note that you are expected to keep the salary package strictly confidential
+            and you cannot discuss or divulge any details to any of your colleagues.
+          </Typography>
+        </Section>
 
-        <Typography textAlign="justify" mb={2}>
-          Please note that you are expected to keep the salary package strictly confidential
-          and you cannot discuss or divulge any details to any of your colleagues.
-        </Typography>
+        <Section mb={0}>
+          <Typography mt={3}>
+            If the offer is acceptable to you, you are requested to get in touch with us
+            on your joining day to complete your joining formalities.
+          </Typography>
 
-        <Typography mt={3}>
-          If the offer is acceptable to you, you are requested to get in touch with us
-          on your joining day to complete your joining formalities.
-        </Typography>
+          <Typography mt={2}>
+            You are requested to sign on the copy of this letter as your acceptance
+            of the above terms and conditions and submit the same to us on your joining day.
+          </Typography>
 
-        <Typography mt={2}>
-          You are requested to sign on the copy of this letter as your acceptance
-          of the above terms and conditions and submit the same to us on your joining day.
-        </Typography>
+          <Typography mt={3}>
+            We look forward to have you on our team.
+          </Typography>
+        </Section>
 
-        <Typography mt={3}>
-          We look forward to have you on our team.
-        </Typography>
-
-        {/* SIGNATURE BLOCK */}
+        {/* SIGNATURE BLOCK - kept together as one unbreakable unit */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "flex-end",
             mt: 8,
+            breakInside: "avoid",
+            pageBreakInside: "avoid",
           }}
         >
-
           {/* LEFT SIDE – Company Signature */}
           <Box>
             <Box
@@ -409,24 +459,16 @@ const CubeageOffer = ({ company = {}, data = {} }) => {
                 my: 2,
               }}
             >
-              {/* Stamp */}
               <img
                 src={cubeage_stamp}
                 alt="stamp"
-                style={{
-                  height: 100,
-                }}
+                style={{ height: 100 }}
               />
-
-              {/* Signature */}
               {company.signature && (
                 <img
                   src={company.signature}
                   alt="signature"
-                  style={{
-                    height: 60,
-                    display: "block",
-                  }}
+                  style={{ height: 60, display: "block" }}
                 />
               )}
             </Box>
@@ -444,11 +486,10 @@ const CubeageOffer = ({ company = {}, data = {} }) => {
             <Typography>{employeeName}</Typography>
             <Typography>Date: __________________</Typography>
           </Box>
-
         </Box>
       </PageLayout>
-      {/* ================= PAGE 4 ================= */}
-      {/* ================= PAGE 4 ================= */}
+
+      {/* ================= PAGE 4 (Annexure I) ================= */}
       <PageLayout company={company}>
 
         <Typography
@@ -485,42 +526,18 @@ const CubeageOffer = ({ company = {}, data = {} }) => {
           }}
         >
           <TableBody>
-
-            {/* Header */}
             <TableRow sx={{ backgroundColor: "#e8e8e8" }}>
-              <TableCell
-                sx={TC({
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                  textAlign: "center",
-                  padding: "10px",
-                })}
-              >
+              <TableCell sx={TC({ fontWeight: "bold", fontSize: "14px", textAlign: "center", padding: "10px" })}>
                 Components
               </TableCell>
-              <TableCell
-                sx={TC({
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                  textAlign: "center",
-                  padding: "10px",
-                })}
-              >
+              <TableCell sx={TC({ fontWeight: "bold", fontSize: "14px", textAlign: "center", padding: "10px" })}>
                 Amount / Month (₹)
               </TableCell>
-              <TableCell
-                sx={TC({
-                  fontWeight: "bold",
-                  fontSize: "14px",
-                  textAlign: "center",
-                  padding: "10px",
-                })}
-              >
+              <TableCell sx={TC({ fontWeight: "bold", fontSize: "14px", textAlign: "center", padding: "10px" })}>
                 Amount / Annum (₹)
               </TableCell>
             </TableRow>
 
-            {/* Salary Rows */}
             {[
               ["Basic", basic],
               ["H.R.A.", hra],
@@ -529,76 +546,35 @@ const CubeageOffer = ({ company = {}, data = {} }) => {
               ["Allowance (Shift+Skill)", allow],
               ["Special Allowance", special],
             ].map(([label, value]) => (
-              <TableRow key={label}>
-                <TableCell
-                  sx={TC({
-                    fontSize: "14px",
-                    padding: "10px",
-                  })}
-                >
-                  {label}
-                </TableCell>
-                <TableCell
-                  sx={TC({
-                    fontSize: "14px",
-                    textAlign: "center",
-                    padding: "10px",
-                  })}
-                >
+              <TableRow key={label} sx={{ breakInside: "avoid", pageBreakInside: "avoid" }}>
+                <TableCell sx={TC({ fontSize: "14px", padding: "10px" })}>{label}</TableCell>
+                <TableCell sx={TC({ fontSize: "14px", textAlign: "center", padding: "10px" })}>
                   {fmt(value)}
                 </TableCell>
-                <TableCell
-                  sx={TC({
-                    fontSize: "14px",
-                    textAlign: "center",
-                    padding: "10px",
-                  })}
-                >
+                <TableCell sx={TC({ fontSize: "14px", textAlign: "center", padding: "10px" })}>
                   {fmt(value * 12)}
                 </TableCell>
               </TableRow>
             ))}
 
-            {/* Gross Salary */}
-            <TableRow sx={{ backgroundColor: "#f0f0f0" }}>
-              <TableCell
-                sx={TC({
-                  fontWeight: "bold",
-                  fontSize: "15px",
-                  padding: "12px",
-                })}
-              >
+            <TableRow sx={{ backgroundColor: "#f0f0f0", breakInside: "avoid", pageBreakInside: "avoid" }}>
+              <TableCell sx={TC({ fontWeight: "bold", fontSize: "15px", padding: "12px" })}>
                 Gross Salary (CTC)
               </TableCell>
-              <TableCell
-                sx={TC({
-                  fontWeight: "bold",
-                  fontSize: "15px",
-                  textAlign: "center",
-                  padding: "12px",
-                })}
-              >
+              <TableCell sx={TC({ fontWeight: "bold", fontSize: "15px", textAlign: "center", padding: "12px" })}>
                 {fmt(basic + hra + da + lta + allow + special)}
               </TableCell>
-              <TableCell
-                sx={TC({
-                  fontWeight: "bold",
-                  fontSize: "15px",
-                  textAlign: "center",
-                  padding: "12px",
-                })}
-              >
+              <TableCell sx={TC({ fontWeight: "bold", fontSize: "15px", textAlign: "center", padding: "12px" })}>
                 {fmt((basic + hra + da + lta + allow + special) * 12)}
               </TableCell>
             </TableRow>
-
           </TableBody>
         </Table>
 
       </PageLayout>
 
-      {/* ================= PAGE 5 ================= */}
-      <PageLayout company={company}>
+      {/* ================= PAGE 5 (Annexure II) ================= */}
+      <PageLayout company={company} isLastPage>
 
         <Typography
           align="center"
@@ -610,22 +586,11 @@ const CubeageOffer = ({ company = {}, data = {} }) => {
           Annexure II
         </Typography>
 
-        <Typography
-          align="center"
-          fontWeight="bold"
-          fontSize="15px"
-          mb={4}
-        >
+        <Typography align="center" fontWeight="bold" fontSize="15px" mb={4}>
           Joining Formalities
         </Typography>
 
-        <Box
-          component="ol"
-          sx={{
-            pl: 4,
-            fontSize: "14px",
-          }}
-        >
+        <Box component="ol" sx={{ pl: 4, fontSize: "14px" }}>
           {[
             "Photocopy of Birth Certificate / S.S.C. Certificate",
             "Photocopy of Final Year Mark Sheet",

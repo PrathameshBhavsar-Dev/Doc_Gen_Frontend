@@ -101,10 +101,6 @@ const numberToWords = (num = 0) => {
 
 /* ================== COMPONENT ================== */
 const NimbjaFullAndfinal = ({ company = {}, data = {} }) => {
-  const totalDays = Number(data.workdays || 0);
-  const paidDays = Number(data.paiddays || 0);
-  const ratio = totalDays ? paidDays / totalDays : 0;
-
   // const gross = Number(data.totalSalary || 0);
 
   // const basic = +(gross * 0.48).toFixed(2);
@@ -133,45 +129,114 @@ const NimbjaFullAndfinal = ({ company = {}, data = {} }) => {
 
   // // ✅ Net Pay Formula
   // const netPay = totalEarned - totalDeductions;
+  const totalDays = Number(data.workdays || 0);
+  const paidDays = Number(data.paiddays || 0);
 
-  const gross = Math.round(Number(data.totalSalary || 0));
+  const gross = Math.round(Number(data.salary || 0) / 12);
+
+  // -----------------------------------------
+  // ACTUAL SALARY COMPONENTS
+  // -----------------------------------------
 
   // Actual salary components
-  const hra = Math.round(gross * 0.18);
+  const hra = Math.round(gross * 0.18); // 
   const da = Math.round(gross * 0.12);
   const special = Math.round(gross * 0.16);
-const food = Math.round(gross * 0.06);
+  const food = Math.round(gross * 0.06);
 
-  // Last component = balance, so total is ALWAYS exactly gross
-  
   const pfAllowance = 3750;
-  
+
   const basic = Math.round(
     gross - (hra + da + special + food + pfAllowance)
   );
 
-  const earned = (v) => Math.round(v * ratio);
+  // -----------------------------------------
+  // ACTUAL TOTAL
+  // -----------------------------------------
 
-  // Actual Total will always be exactly 33,334
   const totalActual =
-    basic + hra + da + special + food + pfAllowance;
+    basic +
+    hra +
+    da +
+    special +
+    food +
+    pfAllowance;
 
-  // Earned Total
+  // -----------------------------------------
+  // EARNED CALCULATION
+  // Formula:
+  // Annual Salary / 12 / Total Days * Paid Days
+  // -----------------------------------------
+
+  const earnedTotal =
+    totalDays > 0
+      ? Math.round(
+        (Number(data.salary || 0) / 12 / totalDays) * paidDays
+      )
+      : 0;
+
+  // PF remains fixed
+  const earnedPfAllowance = pfAllowance;
+
+  // Amount available for other salary components
+  const earnedWithoutPf =
+    earnedTotal - earnedPfAllowance;
+
+  // Calculate non-PF components proportionally
+  const earnedBasic = Math.round(
+    basic * (earnedWithoutPf / (gross - pfAllowance))
+  );
+
+  const earnedHra = Math.round(
+    hra * (earnedWithoutPf / (gross - pfAllowance))
+  );
+
+  const earnedDa = Math.round(
+    da * (earnedWithoutPf / (gross - pfAllowance))
+  );
+
+  const earnedSpecial = Math.round(
+    special * (earnedWithoutPf / (gross - pfAllowance))
+  );
+
+  // Make the final component absorb rounding difference
+  const earnedFood =
+    earnedWithoutPf -
+    (
+      earnedBasic +
+      earnedHra +
+      earnedDa +
+      earnedSpecial
+    );
+
+  // -----------------------------------------
+  // FINAL TOTAL EARNED
+  // -----------------------------------------
+
   const totalEarned =
-    earned(basic) +
-    earned(hra) +
-    earned(da) +
-    earned(special) +
-    earned(food);
+    earnedBasic +
+    earnedHra +
+    earnedDa +
+    earnedSpecial +
+    earnedFood +
+    earnedPfAllowance;
 
-  // Deductions
+  // -----------------------------------------
+  // DEDUCTIONS
+  // -----------------------------------------
+
   const pf = 3750;
   const pt = 200;
   const others = 2000;
 
   const totalDeductions = pf + pt + others;
 
-  const netPay = totalEarned - totalDeductions;
+  // -----------------------------------------
+  // NET PAY
+  // -----------------------------------------
+
+  const netPay =
+    totalEarned - totalDeductions;
 
   return (
     <Box
@@ -307,24 +372,24 @@ const food = Math.round(gross * 0.06);
             </TableRow>
 
             {[
-              ["Basic", basic],
-              ["Bouqet Of Benefits", hra],
-              ["HRA", da],
-              ["City Allowance", special],
-              ["Superannuation Fund", food],
-              ["PF Allowance", pfAllowance], // replaced misc
-            ].map(([label, val]) => (
+              ["Basic", basic, earnedBasic],
+              ["Bouqet Of Benefits", hra, earnedHra],
+              ["HRA", da, earnedDa],
+              ["City Allowance", special, earnedSpecial],
+              ["Superannuation Fund", food, earnedFood],
+              ["PF Allowance", pfAllowance, earnedPfAllowance],
+            ].map(([label, actual, earnedValue]) => (
               <TableRow key={label}>
                 <TableCell colSpan={2} sx={cell}>
                   {label}
                 </TableCell>
+
                 <TableCell sx={{ ...cell, ...right }}>
-                  {formatAmt(val)}
+                  {formatAmt(actual)}
                 </TableCell>
+
                 <TableCell sx={{ ...cell, ...right }}>
-                  {label === "PF Allowance"
-                    ? formatAmt(pfAllowance)
-                    : formatAmt(earned(val))}
+                  {formatAmt(earnedValue)}
                 </TableCell>
               </TableRow>
             ))}
