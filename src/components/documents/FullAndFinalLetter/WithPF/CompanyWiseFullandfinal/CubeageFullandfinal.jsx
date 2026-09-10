@@ -20,7 +20,8 @@ const numberToWords = (num) => {
   return inWords(Math.round(num)) + " Rupees Only";
 };
 
-const fmt = (n) => Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const fmt = (n) =>
+  Math.round(Number(n || 0)).toLocaleString("en-IN");
 const round2 = (n) => Math.round(n * 100) / 100;
 
 const C = (extra = {}) => ({
@@ -52,7 +53,7 @@ const CubeageFullAndFinal = ({ data = {}, company = {} }) => {
 
   const name = data.employeeName || "";
   const empId = data.employeeId || "";
-  const desg = data.designation || "";
+  const desg = data.currentDesignation || "";
   const doj = data.doj || "";
   const dateOfResignation = data.dateofresignation || "";
   const dateOfLeaving = data.dateofleaving || "";
